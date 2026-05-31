@@ -1,0 +1,52 @@
+(ns main
+  (:import [fmt])
+  (:require [github.com/leinonen/pgxdb]))
+
+(def db-url (os/env "DATABASE_URL" "postgres://demo:demo@localhost:5432/demo"))
+
+(defn ^any print-rows [^any rows]
+  (reduce
+    (fn [_ row]
+      (do
+        (fmt/println "  " (get row "id") (get row "name") (get row "email"))
+        nil))
+    nil
+    rows)
+  nil)
+
+(defn -main []
+  (if-err [conn err] (pgxdb/connect db-url)
+    (do (fmt/println "connect failed:" (.Error err)) nil)
+    (do
+      ;; Create table (idempotent)
+      (if-err [_ err] (pgxdb/exec conn
+                        "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL)"
+                        nil)
+        (do (fmt/println "setup failed:" (.Error err)) nil)
+        (do (fmt/println "table ready") nil))
+
+      ;; Insert rows with $1/$2 placeholders — prevents SQL injection
+      (if-err [n err] (pgxdb/exec conn
+                        "INSERT INTO users (name, email) VALUES ($1, $2), ($3, $4) ON CONFLICT (email) DO NOTHING"
+                        ["Alice" "alice@example.com" "Bob" "bob@example.com"])
+        (do (fmt/println "insert failed:" (.Error err)) nil)
+        (do (fmt/println "inserted" n "rows") nil))
+
+      ;; Query all users
+      (if-err [rows err] (pgxdb/query conn "SELECT * FROM users ORDER BY id" nil)
+        (do (fmt/println "query failed:" (.Error err)) nil)
+        (do
+          (fmt/println "all users:")
+          (print-rows rows)
+          nil))
+
+      ;; Parameterized query — find one user by name
+      (if-err [rows err] (pgxdb/query conn "SELECT * FROM users WHERE name = $1" ["Alice"])
+        (do (fmt/println "query failed:" (.Error err)) nil)
+        (do
+          (fmt/println "alice only:")
+          (print-rows rows)
+          nil))
+
+      (pgxdb/close conn)
+      (do (fmt/println "done") nil))))

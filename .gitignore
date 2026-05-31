@@ -1,0 +1,4 @@
+*.go
+!bridge.go
+go.mod
+go.sum
