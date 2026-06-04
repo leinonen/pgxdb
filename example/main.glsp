@@ -1,5 +1,4 @@
 (ns main
-  (:import [fmt])
   (:require [github.com/leinonen/pgxdb]))
 
 (def db-url (os/env "DATABASE_URL" "postgres://demo:demo@localhost:5432/demo"))
