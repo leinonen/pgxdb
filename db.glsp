@@ -2,23 +2,23 @@
 
 ;;; Connect opens a connection to the PostgreSQL database at url.
 ;;; Returns (conn, error) — conn is opaque, pass to Query/Exec/Close.
-(defn ^[any error] Connect [^string url]
+(defn Connect [url string] -> [any error]
   (bridge-connect url))
 
 ;;; Close closes the database connection.
-(defn ^error Close [^any conn]
+(defn Close [conn any] -> error
   (bridge-close conn))
 
 ;;; Query runs a SELECT statement and returns results as a vector of row maps.
 ;;; Each row is a map from column name (string) to value (any).
 ;;; Pass nil for args when no query parameters are needed.
 ;;; Use $1, $2, ... placeholders and pass values in args to prevent SQL injection.
-(defn ^[any error] Query [^any conn ^string sql ^any args]
+(defn Query [conn any sql string args any] -> [any error]
   (bridge-query conn sql args))
 
 ;;; Exec runs an INSERT, UPDATE, or DELETE statement.
 ;;; Returns (rows-affected, error).
 ;;; Pass nil for args when no query parameters are needed.
 ;;; Use $1, $2, ... placeholders and pass values in args to prevent SQL injection.
-(defn ^[any error] Exec [^any conn ^string sql ^any args]
+(defn Exec [conn any sql string args any] -> [any error]
   (bridge-exec conn sql args))

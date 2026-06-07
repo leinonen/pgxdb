@@ -3,7 +3,7 @@
 
 (def db-url (os/env "DATABASE_URL" "postgres://demo:demo@localhost:5432/demo"))
 
-(defn ^any print-rows [^any rows]
+(defn print-rows [rows any] -> any
   (reduce
     (fn [_ row]
       (do
