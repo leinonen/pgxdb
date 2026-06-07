@@ -3,17 +3,16 @@
 
 (def db-url (os/env "DATABASE_URL" "postgres://demo:demo@localhost:5432/demo"))
 
-(defn print-rows [rows any] -> any
+(defn print-rows [rows any] -> void
   (reduce
     (fn [_ row]
       (do
         (fmt/println "  " (get row "id") (get row "name") (get row "email"))
         nil))
     nil
-    rows)
-  nil)
+    rows))
 
-(defn -main []
+(defn -main [] -> void
   (if-err [conn err] (pgxdb/connect db-url)
     (do (fmt/println "connect failed:" (.Error err)) nil)
     (do
